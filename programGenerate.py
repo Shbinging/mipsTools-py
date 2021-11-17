@@ -56,6 +56,6 @@ poke(c.io.init.cpuReset, 1.U)
 step(1)
 poke(c.io.init.cpuReset, 0.U)
         """)
-    for i in range(0, 40):
+    for i in range(0, 60):
         fp.write("step(1);")
 

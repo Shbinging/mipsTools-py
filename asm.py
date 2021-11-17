@@ -69,9 +69,9 @@ def convert():
             shamt = 0
             if (len(lst) == 5):
                 shamt = lst[4]
-            rType(lst[0], int(lst[1]), int(lst[2]), int(lst[3]), shamt)
+            rType(lst[0], int(lst[2]), int(lst[3]), int(lst[1]), shamt)
         if (lst[0] in iOpName.keys()):
-            iType(lst[0], int(lst[1]), int(lst[2]), to10U(str2(int(lst[3]))[16:]))
+            iType(lst[0], int(lst[2]), int(lst[1]), to10U(str2(int(lst[3]))[16:]))
         if (lst[0] in jOpName.keys()):
             jType(lst[0], 0)
 
@@ -89,15 +89,11 @@ if (__name__ == "__main__"):
     allOpList += list(rFuncName.keys())
     allOpList += list(iOpName.keys())
     allOpList += list(jOpName.keys())
-    print(allOpList)
     instrList = []
     labelList = {}
     parseFile()
     getLabel()
-    print(instrList)
     brachReplace()
     fp = open("ori.o", "w")
     convert()
     #fp.close()
-    print(instrList)
-    print(labelList)
