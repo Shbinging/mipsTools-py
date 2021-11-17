@@ -1,0 +1,39 @@
+poke(c.io.init.writeEn, 1L.U)
+step(1)
+//addi $0, $1, 1
+poke(c.io.init.addr, 0L.U);poke(c.io.init.instr, 538968065L.U);step(1)
+//addi $0, $2, 1
+poke(c.io.init.addr, 1L.U);poke(c.io.init.instr, 541065217L.U);step(1)
+//addi $0, $4, 3
+poke(c.io.init.addr, 2L.U);poke(c.io.init.instr, 545259523L.U);step(1)
+//addi $0, $5, 3
+poke(c.io.init.addr, 3L.U);poke(c.io.init.instr, 547356675L.U);step(1)
+//slt $5, $5, $4, 0
+poke(c.io.init.addr, 4L.U);poke(c.io.init.instr, 10758182L.U);step(1)
+//bne $0, $5, 6
+poke(c.io.init.addr, 5L.U);poke(c.io.init.instr, 346030086L.U);step(1)
+//addi $4, $6, 65535
+poke(c.io.init.addr, 6L.U);poke(c.io.init.instr, 549781503L.U);step(1)
+//bltz $0, $6, 6
+poke(c.io.init.addr, 7L.U);poke(c.io.init.instr, 79691782L.U);step(1)
+//add $2, $7, $1, 0
+poke(c.io.init.addr, 8L.U);poke(c.io.init.instr, 14749728L.U);step(1)
+//addi $2, $1, 0
+poke(c.io.init.addr, 9L.U);poke(c.io.init.instr, 539099136L.U);step(1)
+//addi $7, $2, 0
+poke(c.io.init.addr, 10L.U);poke(c.io.init.instr, 541523968L.U);step(1)
+//beq $0, $0, 65531
+poke(c.io.init.addr, 11L.U);poke(c.io.init.instr, 268500987L.U);step(1)
+//addi $0, $10, 1
+poke(c.io.init.addr, 12L.U);poke(c.io.init.instr, 557842433L.U);step(1)
+//beq $0, $0, 0
+poke(c.io.init.addr, 13L.U);poke(c.io.init.instr, 268435456L.U);step(1)
+//halt 0
+poke(c.io.init.addr, 14L.U);poke(c.io.init.instr, 4227858432L.U);step(1)
+
+//set pc to 0
+poke(c.io.init.pcInit, 0.U)
+poke(c.io.init.cpuReset, 1.U)
+step(1)
+poke(c.io.init.cpuReset, 0.U)
+        step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);
