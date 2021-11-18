@@ -3,8 +3,9 @@ addi $1, $0, 0 //a
 addi $2, $0, 1 //b
 addi $4, $0, 10 //n
 //if n < 3
-addi $5, $0, 3 //$5 = 3
-slt $5, $4, $5 //if (n < 3) $5 == 1
+//addi $5, $0, 3 //$5 = 3
+slti $5, $4, 3
+//slt $5, $4, $5 //if (n < 3) $5 == 1
 bne $5, $0, ans1 //if n < 3 goto ans1
 //if n >= 3
 //for(int i = n - 3; i; i --)
