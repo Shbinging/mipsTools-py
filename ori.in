@@ -42,4 +42,4 @@ poke(c.io.init.pcInit, 0.U)
 poke(c.io.init.cpuReset, 1.U)
 step(1)
 poke(c.io.init.cpuReset, 0.U)
-        step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);
+step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);step(1);

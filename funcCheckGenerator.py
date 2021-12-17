@@ -1,5 +1,6 @@
 import pandas as pd
 from random import randrange as rr
+import numpy
 rFuncName = {
     "add": "100000",
     "sub": "100010",
@@ -217,15 +218,42 @@ class cpuStd:
         return stoU(self.pc)
         
 
+import ctypes
+def int_overflow(val):
+    maxint = 2147483647
+    if not -maxint-1 <= val <= maxint:
+        val = (val + (maxint + 1)) % (2 * (maxint + 1)) - maxint - 1
+    return val
+
+
+def unsigned_right_shitf(n,i):
+    # 数字小于0，则转为32位无符号uint
+    if n<0:
+        n = ctypes.c_uint32(n).value
+    # 正常位移位数是为正数，但是为了兼容js之类的，负数就右移变成左移好了
+    if i<0:
+        return -int_overflow(n << abs(i))
+    #print(n)
+    return int_overflow(n >> i)
+# 参数分别是要移的数字和移多少位
+
+
 def wIn(value, mess = "", sep = "\n", port = "instr"):
     global fp
     global s
+    #print(value)
+    # valueList = []
+    # for i in range(0, 4):
+    #     valueList.append(str(value & 0xff) + "L.U")
+    #     value = unsigned_right_shitf(value, 8)
     if (sep == "\n"):
         fp.write(f"//{mess}\n")
-        fp.write(f'poke(c.io.{port}, {value}L.U);')
+        #fp.write(f'{",".join(valueList)}L.U,')
+        fp.write(f'{value}L.U,')
         wClock(sep)
     else:
-        fp.write(f'poke(c.io.{port}, {value}L.U){sep}')
+        #fp.write(f'{",".join(valueList)},')
+        fp.write(f'{value}L.U,')
         wClock(sep)
     
 
@@ -238,8 +266,7 @@ def wOut(value, mess = "", port = "instr"):
     fp.write(f'expect(c.io.{port}, {value}L.U, "{s}")\n')
 
 def wClock(sep):
-    global fp
-    fp.write(f"step(1){sep}")
+    pass
 
 value32List = [0x80000000, 0xFFFFFFFF, 0, 1, 0x7FFFFFFF]#8
 value16List = [0, 1, 0xffff, 0x7fff, 0x8000, 0x8001]#7
@@ -341,12 +368,15 @@ if (__name__ == "__main__"):
     for i in range(0, len(value32List)):
         for j in range(0, len(value32List)):
             checkRType("srav", rr(1, 30), rr(1, 30), rr(1, 30), rr(0, (2**5) - 1), value32List[j], value32List[i], rr(100, 0xffffff) * 4, rr(0, (2**5) - 1))
+
     """
-    """
-    for i in range(0, len(value32List)):
-        for j in range(0, len(value32List)):
-            checkRType("jalr", 1, 2, 3, rr(0, (2**31) - 1) // 4 * 4, 0, value32List[i], rr(100, 0xffffff) * 4, rr(0, (2**5) - 1))
-    """
+    iType("addi", 0, 1, 10)
+    iType("addi", 1, 2, 10)
+    #checkRType("add", 1, 2, 3, 1 ,2, 3, 0, 0)
+    # for i in range(0, len(value32List)):
+    #     for j in range(0, len(value32List)):
+    #         checkRType("jalr", 1, 2, 3, rr(0, (2**31) - 1) // 4 * 4, 0, value32List[i], rr(100, 0xffffff) * 4, rr(0, (2**5) - 1))
+    
     # for i in range(0, 1):
     #     for k in range(1, 2):
     #         if (i >= k):continue
@@ -355,7 +385,9 @@ if (__name__ == "__main__"):
     
     #for i in range(0,len(value32List)):
         #checkJType("halt", value32List[i] & 0x3ffffff)
+    """
     iType("addi", 1, 1, 16)
+    """
 
     fp.close()
     
