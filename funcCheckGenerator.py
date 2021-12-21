@@ -440,8 +440,8 @@ if (__name__ == "__main__"):
     iType("addi", 0, 1, 10)
     iType("addi", 1, 1, 10)
     iType("addi", 1, 1, 10)
-    #expect regs(2) 4
-    #expect regs(1) 10
+    #expect regs(2) 8
+    #expect regs(1) 26
     print("(" + "L.U,".join(list(map(str,instrList))) + "L.U)")
     print(helpList)
     cpu.loadProgram(instrList)
