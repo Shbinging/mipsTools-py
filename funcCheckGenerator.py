@@ -28,7 +28,9 @@ iOpName = {
     "xori":"001110",
     "slti":"001010",
     "sltiu":"001011",
-    "lui":"001111"
+    "lui":"001111",
+    "sw":"101011",
+    "lw":"100011"
 }
 
 jOpName = {
@@ -56,11 +58,11 @@ def stoU(n):
 def utoS(n):
     return to10S(str2(n, 32))
 
-def rType(opName, rs, rt, rd, shamt, sep = "\n"):
+def rType(opName, rs, rt, rd, shamt = 0, sep = "\n"):
     instr = str2(0, 6) + str2(rs, 5) + str2(rt, 5) + str2(rd, 5) + str2(shamt, 5) + rFuncName[opName]
-    cpu.run(int(instr, 2))
     help = f"{opName} ${rd}, ${rs}, ${rt}, {shamt}"
-    wIn(int(instr, 2), help, sep)
+    instrList.append(to10U(instr))
+    helpList.append(help)
 
 def iType(opName, rs, rt, imm, sep = "\n"):
     rtStr = ""
@@ -72,20 +74,21 @@ def iType(opName, rs, rt, imm, sep = "\n"):
         rtStr = str2(rt, 5)
     global iOpName
     instr = iOpName[opName] + str2(rs, 5) + rtStr + str2(imm, 16)
-    cpu.run(int(instr, 2))
+    instrList.append(to10U(instr))
     help =  f"{opName} ${rt}, ${rs}, {imm}"
-    wIn(int(instr, 2), help, sep)
+    helpList.append(help)
 
 def jType(opName, target, sep = "\n"):
     instr = jOpName[opName] + str2(target, 26)
-    global cpu
-    cpu.run(int(instr, 2))
+    instrList.append(to10U(instr))
     help = f"{opName} {target}"
-    wIn(int(instr, 2), help, sep)
+    helpList.append(help)
 
 class cpuStd:
     regs = [0] * 32
     pc = 0
+    instrMem = [0] * 64
+    dataMem = [0] * 64
     def rTypeCalc(self, instr):
         rs = int(instr[6:11], 2)
         rt = int(instr[11:16], 2)
@@ -140,7 +143,7 @@ class cpuStd:
             self.regs[rd] = self.regs[rt] >> self.regs[rs]
         
         if (func == "001001"):
-            self.regs[rd] = self.pc + 8
+            self.regs[rd] = self.pc + 4
             self.pc = self.regs[rs]
             return
         self.pc += 4
@@ -189,6 +192,13 @@ class cpuStd:
             self.regs[rt] = utoS(stoU(self.regs[rs]) ^ imm32u)
         if (op == "001111"):
             self.regs[rt] = to10S(imm + "0" * 16)
+        
+        if (op == "101011"):
+            self.dataMem[(imm32s + self.regs[rs]) // 4] = self.regs[rt]
+
+        if (op == "100011"):
+            self.regs[rt] = self.dataMem[(imm32s + self.regs[rs]) // 4]
+        
         self.pc += 4
     
     def jTypeCalc(self, instr):
@@ -200,7 +210,25 @@ class cpuStd:
         if (op == "111111"):
             pass
 
-        
+    def runAuto(self):
+        while True:
+            i = self.pc // 4
+            instr = self.instrMem[i]
+            if (instr == 0xffffffff):break
+            self.run(instr)
+            # if ((str2(instr, 32)[0:6] == "000000" and str2(instr, 32)[26:32] == "001001") or (str2(instr, 32)[0:6] == "000011")):
+            #     self.run(self.instrMem[i + 1])
+            #     self.run(self.instrMem[i + 2])
+            #     self.pc -= 8
+
+    def loadProgram(self, instrList):
+        i = 0
+        for instr in instrList:
+            self.instrMem[i] = instr
+            i += 1
+        for j in range(i, 64):
+            self.instrMem[i] = 0xffffffff
+
     def run(self, instrInt):
         instr = str2(instrInt, 32)
         op = instr[0:6]
@@ -298,25 +326,23 @@ def setPc(val, hide = 0):
         fp.write("\n")
 
 
-def checkRType(instrName, rs, rt, rd, rsVal, rtVal, rdVal, pcVal = 256, shamt = 0):
+def checkRType(instrName, rs, rt, rd, rsVal, rtVal, rdVal, pcVal = 0, shamt = 0):
     global cpu
     setReg(rd, rdVal)
     setReg(rs, rsVal)
     setReg(rt, rtVal)
 
-    setPc(pcVal)
+    #setPc(pcVal)
     rType(instrName, rs, rt, rd, shamt)
     checkReg(rs, cpu.getReg(rs))
     checkReg(rt, cpu.getReg(rt))
     checkReg(rd, cpu.getReg(rd))
     checkPc(cpu.getPC())
 
-def checkIType(instrName, rs, rt, imm, rsVal, rtVal, pcVal = 256):
+def checkIType(instrName, rs, rt, imm, rsVal, rtVal, pcVal = 0):
     global cpu
     setReg(rs, rsVal)
     setReg(rt, rtVal)
-
-    setPc(pcVal)
 
     iType(instrName, rs, rt, imm)
 
@@ -324,9 +350,8 @@ def checkIType(instrName, rs, rt, imm, rsVal, rtVal, pcVal = 256):
     checkReg(rt, cpu.getReg(rt))
     checkPc(cpu.getPC())
 
-def checkJType(instrName, instr_target, pcVal = 0xf0000000):
+def checkJType(instrName, instr_target, pcVal = 0):
     global cpu
-    setPc(pcVal)
 
     jType(instrName, instr_target)
 
@@ -337,6 +362,9 @@ def checkReg(index, val):
 
 def checkPc(val):
     wOut(val, f"watch.pc", f"watch.pc")
+
+def nop():
+    rType("sll", 0, 0, 0, 0)
 
 """
 rFuncName = {
@@ -360,34 +388,64 @@ cpu = cpuStd()
 fp = open("instr.in", "w")
 if (__name__ == "__main__"):
     s = 0
-    #setReg(1, 1)
-    #setPc(128)
-    #checkPc(cpu.getPC())
-    #checkRType("sll", 1, 2, 3, 1, 1, 3, 256, 10)
+  
+    instrList = []
+    helpList = []
+    #c2转发&&load store
     """
-    for i in range(0, len(value32List)):
-        for j in range(0, len(value32List)):
-            checkRType("srav", rr(1, 30), rr(1, 30), rr(1, 30), rr(0, (2**5) - 1), value32List[j], value32List[i], rr(100, 0xffffff) * 4, rr(0, (2**5) - 1))
+    iType("addi", 0, 1, 10)
+    iType("sw", 1, 1, 10)
+    iType("lw",0, 3, 20)
+    nop()
+    iType("addi", 3, 4, 10)
+    #expect regs[4] 20
+    """
 
+    #c1转发
     """
     iType("addi", 0, 1, 10)
     iType("addi", 1, 2, 10)
-    #checkRType("add", 1, 2, 3, 1 ,2, 3, 0, 0)
-    # for i in range(0, len(value32List)):
-    #     for j in range(0, len(value32List)):
-    #         checkRType("jalr", 1, 2, 3, rr(0, (2**31) - 1) // 4 * 4, 0, value32List[i], rr(100, 0xffffff) * 4, rr(0, (2**5) - 1))
-    
-    # for i in range(0, 1):
-    #     for k in range(1, 2):
-    #         if (i >= k):continue
-    #         for j in range(0, 1):
-    #             checkIType("lui", 1, 2, value16List[j], value32List[i], value32List[k], 0xfffff * 4)
-    
-    #for i in range(0,len(value32List)):
-        #checkJType("halt", value32List[i] & 0x3ffffff)
-    """
-    iType("addi", 1, 1, 16)
+    #expect regs[2] 20
     """
 
+    #branch擦除
+    """
+    iType("beq", 0, 0, 3)
+    iType("addi", 0, 1, 10)
+    iType("addi", 1, 1, 10)
+    iType("addi", 1, 1, 10)
+    nop()
+    #expect regs(1) 0
+    iType("bne", 0, 0, 3)
+    iType("addi", 0, 1, 10)
+    iType("addi", 1, 1, 10)
+    iType("addi", 1, 1, 10)
+    nop()
+    #expect regs(1) 30
+    """
+
+    #jal
+    """
+    jType("jal", 3)
+    iType("addi", 0, 1, 10)
+    iType("addi", 1, 1, 10)
+    iType("addi", 1, 1, 10)
+    """
+    #expect regs(1) 10
+    #expect regs(31) 4
+
+    #jalr
+    iType("addi", 0, 1, 16)
+    rType("jalr", 1, 0, 2)
+    iType("addi", 0, 1, 10)
+    iType("addi", 1, 1, 10)
+    iType("addi", 1, 1, 10)
+    #expect regs(2) 4
+    #expect regs(1) 10
+    print("(" + "L.U,".join(list(map(str,instrList))) + "L.U)")
+    print(helpList)
+    cpu.loadProgram(instrList)
+    cpu.runAuto()
+    print(cpu.regs[1])
+    print(cpu.regs[2])
     fp.close()
-    
