@@ -398,8 +398,8 @@ if (__name__ == "__main__"):
     iType("lw",0, 3, 20)
     nop()
     iType("addi", 3, 4, 10)
-    #expect regs[4] 20
     """
+    #expect regs[4] 20
 
     #c1转发
     """
@@ -435,17 +435,48 @@ if (__name__ == "__main__"):
     #expect regs(31) 4
 
     #jalr
-    iType("addi", 0, 1, 16)
-    rType("jalr", 1, 0, 2)
-    iType("addi", 0, 1, 10)
-    iType("addi", 1, 1, 10)
-    iType("addi", 1, 1, 10)
+    
+    # iType("addi", 0, 1, 16)
+    # rType("jalr", 1, 0, 2)
+    # iType("addi", 0, 1, 10)
+    # iType("addi", 1, 1, 10)
+    # iType("addi", 1, 1, 10)
+    
+    #expect regs(1) 26
+    #expect regs(2) 8
+    """
+    #add overflow
+    iType("lui", 0, 1, 0x8000)
+    iType("addi", 1, 2, 0x8000)
+    expect regs(2) 0
+    """
+
+    """
+    """
     #expect regs(2) 8
     #expect regs(1) 26
+    instrList = [538902780,
+268435462,
+2952658944,
+2414149640,
+2414215172,
+10940450,
+2414149632,
+10485769,
+536936449,
+537001986,
+2950758400,
+2950889468,
+603979768,
+537067528,
+6352905,
+603914248,
+600047616,
+]
     print("(" + "L.U,".join(list(map(str,instrList))) + "L.U)")
     print(helpList)
     cpu.loadProgram(instrList)
     cpu.runAuto()
-    print(cpu.regs[1])
+    print(cpu.regs[4])
     print(cpu.regs[2])
     fp.close()

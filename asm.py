@@ -1,5 +1,5 @@
-from funcCheckGenerator import jType, rFuncName,iOpName,jOpName,str2,to10U
-
+from funcCheckGenerator import jType, nop, rFuncName,iOpName,jOpName,str2,to10U
+import sys
 def wOut(instr, help=""):
     if len(help): help = "//" + help
     fp.write(f"{instr}{help}\n")
@@ -34,12 +34,14 @@ def findList(lst:list, target:str):
 
 def formatCode(st:str):
     global allOpList
-    st = st.replace("\n", "")
-    st = st.split("//")[0]
-    st = st.replace("$", "")
-    st = st.replace(",", " ")
-    st = st.replace(":", " ")
-    st = " ".join(st.split())
+    for i in range(0, 10):
+        st = st.replace("$esp", "$31")
+        st = st.replace("\n", "")
+        st = st.split("//")[0]
+        st = st.replace("$", "")
+        st = st.replace(",", " ")
+        st = st.replace(":", " ")
+        st = " ".join(st.split())
     if (len(st) == 0): return "-1"
     if (st[0] == "//"): return "-1"
     if (findList(allOpList, st)): return st
@@ -47,7 +49,7 @@ def formatCode(st:str):
 
 def parseFile():
     global instrList
-    with open("ori.as", "r") as fp:
+    with open(sys.argv[1], "r") as fp:
         for line in fp:
             codeStr = formatCode(line)
             if (codeStr != "-1"):
@@ -64,16 +66,19 @@ def getLabel():
 
 def convert():
     for instr in instrList:
+        print(instr)
         lst = instr.split()
         if (lst[0] in rFuncName.keys()):
             shamt = 0
             if (len(lst) == 5):
                 shamt = lst[4]
-            rType(lst[0], int(lst[2]), int(lst[3]), int(lst[1]), shamt)
-        if (lst[0] in iOpName.keys()):
+            rType(lst[0], int(lst[2]), int(lst[3]), int(lst[1]), int(shamt))
+        elif (lst[0] in iOpName.keys()):
             iType(lst[0], int(lst[2]), int(lst[1]), to10U(str2(int(lst[3]))[16:]))
-        if (lst[0] in jOpName.keys()):
+        elif (lst[0] in jOpName.keys()):
             jType(lst[0], 0)
+        else:
+            nop()
 
 def brachReplace():
     for i in range(0, len(instrList)):
@@ -82,6 +87,9 @@ def brachReplace():
             targetPos = labelList[lst[3]]
             offset = targetPos - i - 1
             lst[3] = str(to10U(str2(offset)[16:]))
+        if (lst[3] in labelList.keys()):
+            targetPos = labelList[lst[3]] * 4
+            lst[3] = str(targetPos)
         instrList[i] = " ".join(lst)
 
 if (__name__ == "__main__"):
@@ -94,6 +102,6 @@ if (__name__ == "__main__"):
     parseFile()
     getLabel()
     brachReplace()
-    fp = open("ori.o", "w")
+    fp = open(sys.argv[1].split(".")[0] + ".O", "w")
     convert()
     #fp.close()
